@@ -6,7 +6,7 @@ root = os.path.dirname(os.path.abspath(__file__))
 
 wall_collision_threshold = 0.04
 obj_collision_threshold = 0.04
-scale = 600
+scale = 640
 map_size = (scale, scale)
 
 robot_vel_scale = 0.02
