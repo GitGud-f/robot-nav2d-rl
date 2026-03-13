@@ -36,7 +36,7 @@ class MobileRobotEnv(gym.Env):
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(obs_dim,), dtype=np.float32)
         
         self.engine = None
-        self.max_steps = 500
+        self.max_steps = config.max_steps_per_episode
         self.current_step = 0
 
     def reset(self, seed: int = None, options: dict = None) -> tuple:

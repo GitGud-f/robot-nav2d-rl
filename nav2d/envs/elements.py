@@ -68,7 +68,7 @@ class VelRobot(ObjectBase):
             - init_y (float): Initial Y coordinate (normalized [0, 1]).
         """
         
-        super().__init__(f"{config.root}/assets/robot.png", np.array((30, 30)), init_x, init_y)
+        super().__init__(f"{config.root}/../assets/robot.png", np.array((30, 30)), init_x, init_y)
 
     def move(self, dx: float, dy: float):
         """
@@ -93,7 +93,7 @@ class Goal(ObjectBase):
             - x (float): X coordinate of the goal (normalized [0, 1]).
             - y (float): Y coordinate of the goal (normalized [0, 1]).
         """
-        super().__init__(f"{config.root}/assets/goal.png", np.array((30, 30)), x, y)
+        super().__init__(f"{config.root}/../assets/goal.png", np.array((30, 30)), x, y)
 
 class StaticObstacle(ObjectBase):
     """
@@ -108,7 +108,7 @@ class StaticObstacle(ObjectBase):
             - y (float): Y coordinate of the obstacle (normalized [0, 1]).
         """
         
-        super().__init__(f"{config.root}/assets/cat.png", np.array((30, 30)), x, y)
+        super().__init__(f"{config.root}/../assets/cat.png", np.array((30, 30)), x, y)
 
 class RandomPathCreature(ObjectBase):
     """
@@ -122,7 +122,7 @@ class RandomPathCreature(ObjectBase):
             - waypoints (list): List of (x, y) tuples representing the path waypoints.
             - velocity (float): Speed at which the creature moves along the path.
         """
-        super().__init__(f"{config.root}/assets/cat.png", np.array((30, 30)), waypoints[0][0], waypoints[0][1])
+        super().__init__(f"{config.root}/../assets/cat.png", np.array((30, 30)), waypoints[0][0], waypoints[0][1])
         self.waypoints = waypoints
         self.vel = velocity
         self.target_idx = 1
@@ -158,7 +158,7 @@ class OrbitingCreature(ObjectBase):
         """
         init_x = goal.x + orbit_radius
         init_y = goal.y
-        super().__init__(f"{config.root}/assets/cat.png", np.array((30, 30)), init_x, init_y)
+        super().__init__(f"{config.root}/../assets/cat.png", np.array((30, 30)), init_x, init_y)
         self.goal = goal
         self.radius = orbit_radius
         self.angle = 0.0

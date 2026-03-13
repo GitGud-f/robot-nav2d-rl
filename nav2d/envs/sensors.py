@@ -53,11 +53,15 @@ def get_lidar_readings(robot_x: float, robot_y: float, robot_theta: float, obsta
             hit_mask = (t1 > 0) & (t1 < distances[valid_mask])
             distances[valid_mask] = np.where(hit_mask, t1, distances[valid_mask])
 
-    t_x = np.where(ray_dirs[:, 0] > 0, (1.0 - origin[0]) / ray_dirs[:, 0], 
-                   np.where(ray_dirs[:, 0] < 0, (0.0 - origin[0]) / ray_dirs[:, 0], np.inf))
+    eps = 1e-8
+    safe_ray_x = np.where(np.abs(ray_dirs[:, 0]) < eps, eps, ray_dirs[:, 0])
+    safe_ray_y = np.where(np.abs(ray_dirs[:, 1]) < eps, eps, ray_dirs[:, 1])
     
-    t_y = np.where(ray_dirs[:, 1] > 0, (1.0 - origin[1]) / ray_dirs[:, 1], 
-                   np.where(ray_dirs[:, 1] < 0, (0.0 - origin[1]) / ray_dirs[:, 1], np.inf))
+    t_x = np.where(ray_dirs[:, 0] > 0, (1.0 - origin[0]) / safe_ray_x, 
+                   np.where(ray_dirs[:, 0] < 0, (0.0 - origin[0]) /safe_ray_x, np.inf))
+    
+    t_y = np.where(ray_dirs[:, 1] > 0, (1.0 - origin[1]) / safe_ray_y, 
+                   np.where(ray_dirs[:, 1] < 0, (0.0 - origin[1]) / safe_ray_y, np.inf))
     
     wall_dist = np.minimum(t_x, t_y)
     distances = np.minimum(distances, wall_dist)
