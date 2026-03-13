@@ -29,10 +29,10 @@ class ObjectBase:
         Initializes the base object with an image and initial coordinates.
         
         Args:
-            image_path (str): Path to the image representing the object.
-            shape (np.ndarray): Tuple representing the width and height of the object in pixels.
-            init_x (float): Initial X coordinate (normalized [0, 1]).
-            init_y (float): Initial Y coordinate (normalized [0, 1]).
+            - image_path (str): Path to the image representing the object.
+            - shape (np.ndarray): Tuple representing the width and height of the object in pixels.
+            - init_x (float): Initial X coordinate (normalized [0, 1]).
+            - init_y (float): Initial Y coordinate (normalized [0, 1]).
         """
         
         self.image = pygame.image.load(image_path)
@@ -46,10 +46,10 @@ class ObjectBase:
         Returns the image and position for rendering the object.
         
         Args:
-            scale (int): Scaling factor for the rendering.
+            - scale (int): Scaling factor for the rendering.
             
         Returns:
-            tuple: The image and its position for rendering.
+            - tuple: The image and its position for rendering.
         """
         return self.image, (int(scale * self.x - self.shape[0] / 2), 
                             config.map_size[1] - int(scale * self.y - self.shape[1] / 2))
@@ -62,9 +62,10 @@ class VelRobot(ObjectBase):
     def __init__(self, init_x: float, init_y: float):
         """
         Initializes the robot with a specific image and starting coordinates.
+        
         Args:
-            init_x (float): Initial X coordinate (normalized [0, 1]).
-            init_y (float): Initial Y coordinate (normalized [0, 1]).
+            - init_x (float): Initial X coordinate (normalized [0, 1]).
+            - init_y (float): Initial Y coordinate (normalized [0, 1]).
         """
         
         super().__init__(f"{config.root}/assets/robot.png", np.array((30, 30)), init_x, init_y)
@@ -72,11 +73,11 @@ class VelRobot(ObjectBase):
     def move(self, dx: float, dy: float):
         """
         Moves the robot by the specified deltas, clamped to the map boundaries.
+        
         Args:
-            dx (float): Delta X coordinate.
-            dy (float): Delta Y coordinate.
-
-        """
+            - dx (float): Delta X coordinate.
+            - dy (float): Delta Y coordinate.
+        """ 
         self.x = np.clip(self.x + dx, 0, 1)
         self.y = np.clip(self.y + dy, 0, 1)
 
@@ -89,8 +90,8 @@ class Goal(ObjectBase):
         Initializes the goal with a specific image and coordinates. 
         
         Args:            
-            x (float): X coordinate of the goal (normalized [0, 1]).
-            y (float): Y coordinate of the goal (normalized [0, 1]).
+            - x (float): X coordinate of the goal (normalized [0, 1]).
+            - y (float): Y coordinate of the goal (normalized [0, 1]).
         """
         super().__init__(f"{config.root}/assets/goal.png", np.array((30, 30)), x, y)
 
@@ -103,8 +104,8 @@ class StaticObstacle(ObjectBase):
         Initializes the static obstacle with a specific image and coordinates.
         
         Args:
-            x (float): X coordinate of the obstacle (normalized [0, 1]).
-            y (float): Y coordinate of the obstacle (normalized [0, 1]).
+            - x (float): X coordinate of the obstacle (normalized [0, 1]).
+            - y (float): Y coordinate of the obstacle (normalized [0, 1]).
         """
         
         super().__init__(f"{config.root}/assets/cat.png", np.array((30, 30)), x, y)
@@ -118,8 +119,8 @@ class RandomPathCreature(ObjectBase):
         Initializes the random path creature with a specific image, waypoints, and velocity.
         
         Args:
-            waypoints (list): List of (x, y) tuples representing the path waypoints.
-            velocity (float): Speed at which the creature moves along the path.
+            - waypoints (list): List of (x, y) tuples representing the path waypoints.
+            - velocity (float): Speed at which the creature moves along the path.
         """
         super().__init__(f"{config.root}/assets/cat.png", np.array((30, 30)), waypoints[0][0], waypoints[0][1])
         self.waypoints = waypoints
@@ -128,8 +129,8 @@ class RandomPathCreature(ObjectBase):
 
     def step(self):
         """
-            Moves the creature towards the current target waypoint, updating its position.
-            If the creature reaches the waypoint, it updates to the next target in the list.
+        Moves the creature towards the current target waypoint, updating its position.
+        If the creature reaches the waypoint, it updates to the next target in the list.
         """
         
         target = self.waypoints[self.target_idx]
@@ -151,9 +152,9 @@ class OrbitingCreature(ObjectBase):
         Initializes the orbiting creature with a specific image, goal, and orbit parameters.
         
         Args:
-            goal (Goal): The central goal around which the creature will orbit.
-            orbit_radius (float): The radius of the orbit.
-            velocity (float): The speed at which the creature moves along the orbit.
+            - goal (Goal): The central goal around which the creature will orbit.
+            - orbit_radius (float): The radius of the orbit.
+            - velocity (float): The speed at which the creature moves along the orbit.
         """
         init_x = goal.x + orbit_radius
         init_y = goal.y

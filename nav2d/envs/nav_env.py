@@ -44,11 +44,11 @@ class MobileRobotEnv(gym.Env):
         Resets the environment to an initial state, randomizing the positions of the robot, goal, and obstacles.
         
         Args:
-            seed (int, optional): Random seed for reproducibility.
-            options (dict, optional): Additional options for environment configuration.
+            - seed (int, optional): Random seed for reproducibility.
+            -  options (dict, optional): Additional options for environment configuration.
             
         Returns:
-            tuple: (observation, info)
+            - tuple: (observation, info)
         """
         
         super().reset(seed=seed)
@@ -77,10 +77,10 @@ class MobileRobotEnv(gym.Env):
         Advances the environment by one step given the agent's action.
         
         Args:
-            action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
+            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
             
         Returns:
-            tuple: (observation, reward, terminated, truncated, info)
+            - tuple: (observation, reward, terminated, truncated, info)
         """
         self.current_step += 1
         
@@ -116,7 +116,7 @@ class MobileRobotEnv(gym.Env):
         for obstacle detection.
         
         Returns: 
-            np.ndarray: The observation vector.
+            - np.ndarray: The observation vector.
         """
         
         base_state = np.array([
@@ -136,6 +136,6 @@ class MobileRobotEnv(gym.Env):
         Renders the current state of the environment using Pygame.
         
         Returns:
-            np.ndarray: The rendered image as a NumPy array.
+            - np.ndarray: The rendered image as a NumPy array.
         """
         return self.engine.render()

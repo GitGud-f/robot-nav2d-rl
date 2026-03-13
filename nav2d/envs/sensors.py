@@ -17,13 +17,13 @@ def get_lidar_readings(robot_x: float, robot_y: float, robot_theta: float, obsta
     Distance 1.0 means no obstacle detected within lidar_max_dist.
     
     Args:
-        robot_x (float): X coordinate of the robot.
-        robot_y (float): Y coordinate of the robot.
-        robot_theta (float): Current heading orientation of the robot.
-        obstacles (list): List of obstacle objects to check intersections with.
+        - robot_x (float): X coordinate of the robot.
+        - robot_y (float): Y coordinate of the robot.
+        - robot_theta (float): Current heading orientation of the robot.
+        - obstacles (list): List of obstacle objects to check intersections with.
     
     Returns:
-        np.ndarray: Normalized Lidar distances across 360 degrees.
+        - np.ndarray: Normalized Lidar distances across 360 degrees.
     """
     num_rays = config.lidar_resolution
     max_d = config.lidar_max_dist

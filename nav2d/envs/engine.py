@@ -21,10 +21,10 @@ class NavigationEngine:
         Initializes the simulation engine with the specified entities.
         
         Args:
-            robot (VelRobot): The mobile robot instance.
-            goal (Goal): The target location instance.
-            static_obs (list): List of StaticObstacle instances.
-            moving_creatures (list): List of moving creature instances.
+            - robot (VelRobot): The mobile robot instance.
+            - goal (Goal): The target location instance.
+            - static_obs (list): List of StaticObstacle instances.
+            - moving_creatures (list): List of moving creature instances.
         """
         self.screen = None
         pygame.display.set_caption("2D Mobile Robot RL Navigation")
@@ -41,7 +41,7 @@ class NavigationEngine:
         Updates the physics of the simulation based on the given action.
         
         Args:
-            action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
+            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
         """
         if action == 0: # RIGHT
             self.robot.orient -= np.pi/4
@@ -64,7 +64,7 @@ class NavigationEngine:
         Checks for collisions with walls, obstacles, and goal.
         
         Returns:
-            tuple: (hit_obstacle (bool), reach_goal (bool))
+            - tuple: (hit_obstacle (bool), reach_goal (bool))
         """
         # Wall Collision
         if self.robot.x <= 0 or self.robot.x >= 1 or self.robot.y <= 0 or self.robot.y >= 1:
@@ -86,7 +86,7 @@ class NavigationEngine:
         Renders the current state of the environment using Pygame.
         
         Returns: 
-            np.ndarray: The rendered image as a NumPy array.
+            - np.ndarray: The rendered image as a NumPy array.
         """
         
         if self.screen is None:
