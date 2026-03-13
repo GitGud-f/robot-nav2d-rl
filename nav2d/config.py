@@ -32,3 +32,16 @@ dqn_buffer_size = 100_000
 dqn_epsilon_start = 1.0
 dqn_epsilon_end = 0.05
 dqn_epsilon_decay = 0.995
+
+#* PPO Hyperparameters
+
+ppo_num_episodes = 2000
+ppo_rollout_steps = 2048        
+ppo_lr_actor = 3e-4              
+ppo_lr_critic = 1e-3             
+ppo_gamma = 0.99                
+ppo_gae_lambda = 0.95            
+ppo_clip_epsilon = 0.2           
+ppo_epochs = 10                 
+ppo_batch_size = 64        
+ppo_entropy_coef = 0.01         
