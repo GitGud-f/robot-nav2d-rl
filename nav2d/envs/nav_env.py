@@ -39,13 +39,14 @@ class MobileRobotEnv(gym.Env):
         self.max_steps = config.max_steps_per_episode
         self.current_step = 0
 
-    def reset(self, seed: int = None, options: dict = None) -> tuple:
+    def reset(self, seed: int = None, options: dict = None, curriculum_level: int=3) -> tuple:
         """
         Resets the environment to an initial state, randomizing the positions of the robot, goal, and obstacles.
         
         Args:
             - seed (int, optional): Random seed for reproducibility.
             -  options (dict, optional): Additional options for environment configuration.
+            - curriculum_level (int, optional): Difficulty level for curriculum learning (1-3).
             
         Returns:
             - tuple: (observation, info)
@@ -53,15 +54,47 @@ class MobileRobotEnv(gym.Env):
         
         super().reset(seed=seed)
         self.current_step = 0
-        
-        robot = VelRobot(np.random.uniform(0.1, 0.3), np.random.uniform(0.1, 0.3))
-        goal = Goal(np.random.uniform(0.7, 0.9), np.random.uniform(0.7, 0.9))
-        
+
         static_obs =[
             StaticObstacle(0.5, 0.5),
             StaticObstacle(0.3, 0.8),
             StaticObstacle(0.8, 0.3)
         ]
+        obs_points = [(0.5, 0.5), (0.3, 0.8), (0.8, 0.3)]
+        
+        if curriculum_level == 1:
+            rx, ry = 0.2, 0.2
+            gx, gy = 0.8, 0.8
+        elif curriculum_level == 2:
+            # Phase 2: Random Robot, Fixed Goal
+            rx = np.random.uniform(0.1, 0.9)
+            ry = np.random.uniform(0.1, 0.9)
+            gx, gy = 0.8, 0.8
+            if rx == gx and gy == ry:
+                rx -=  0.2
+            if  (rx, ry) in obs_points:
+                rx -= 0.1
+        else:
+            # Phase 3: Random Robot, Random Goal (Full Complexity)
+            rx = np.random.uniform(0.1, 0.9)
+            ry = np.random.uniform(0.1, 0.9)
+            gx = np.random.uniform(0.1, 0.9)
+            gy = np.random.uniform(0.1, 0.9)
+            if rx == gx and gy == ry:
+                rx -=  0.1
+                ry += 0.1
+                
+            if  (rx, ry) in obs_points:
+                if rx >= 0.1: rx -= 0.1
+                else: rx + 0.2
+                
+            if  (gx, gy) in obs_points:
+                if rx >= 0.1: rx -= 0.1
+                else: rx + 0.2
+            
+        robot = VelRobot(rx, ry)
+        goal = Goal(gx, gy)
+        
         
         moving_creatures =[
             OrbitingCreature(goal, orbit_radius=0.1),
@@ -84,18 +117,29 @@ class MobileRobotEnv(gym.Env):
         """
         self.current_step += 1
         
-        prev_dist = np.hypot(self.engine.robot.x - self.engine.goal.x, 
-                             self.engine.robot.y - self.engine.goal.y)
+        dx_prev = self.engine.goal.x - self.engine.robot.x
+        dy_prev = self.engine.goal.y - self.engine.robot.y
+        prev_dist = np.hypot(dx_prev, dy_prev)
+        
+        target_angle_prev = np.arctan2(dy_prev, dx_prev)
+        angle_diff_prev = abs((target_angle_prev - self.engine.robot.orient + np.pi) % (2 * np.pi) - np.pi)
         
         self.engine.step_physics(action)
         
         hit_obstacle, reach_goal = self.engine.check_collisions()
         
-        new_dist = np.hypot(self.engine.robot.x - self.engine.goal.x, 
-                            self.engine.robot.y - self.engine.goal.y)
-                            
+        dx_new = self.engine.goal.x - self.engine.robot.x
+        dy_new = self.engine.goal.y - self.engine.robot.y
+        new_dist = np.hypot(dx_new, dy_new)
+        
+        target_angle_new = np.arctan2(dy_new, dx_new)
+        angle_diff_new = abs((target_angle_new - self.engine.robot.orient + np.pi) % (2 * np.pi) - np.pi)
+        
+           
         reward = config.step_penalty
-        reward += (prev_dist - new_dist) * config.dense_reward # Dense reward for moving closer
+        
+        reward += (prev_dist - new_dist) * config.dense_distance_reward # Dense reward for moving closer
+        reward += (angle_diff_prev - angle_diff_new) * config.dense_angle_reward
         
         obs = self._get_obs()
         lidar_readings = obs[5:]

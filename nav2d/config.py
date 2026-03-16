@@ -20,13 +20,15 @@ reach_goal_reward = 100.0
 too_close_penalty = -0.5
 collision_penalty = -100.0
 step_penalty = -0.1
-dense_reward = 100
+dense_distance_reward = 50
+dense_angle_reward = 50
 max_steps_per_episode = 500
 
+early_stopping_avg_reward = 95.0
 
 #* DQN Hyperparameterss
 
-dqn_num_episodes = 1000
+dqn_num_episodes = 2000
 dqn_lr = 1e-3
 dqn_batch_size = 64
 dqn_gamma = 0.99
@@ -39,6 +41,7 @@ dqn_epsilon_decay = 0.995
 #* PPO Hyperparameters
 
 ppo_num_episodes = 2000
+ppo_update_agent = 50
 ppo_rollout_steps = 2048        
 ppo_lr_actor = 3e-4              
 ppo_lr_critic = 1e-3             

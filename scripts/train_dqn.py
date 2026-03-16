@@ -42,17 +42,27 @@ def main():
 
     logger = MetricLogger("output/logs/dqn_training")
     
-    num_episodes = 1000
+    num_episodes = config.dqn_num_episodes
     reward_history =[]
 
+    def get_curriculum_level(current_step, max_steps):
+        progress = current_step / max_steps
+        if progress < 0.20:
+            return 1
+        elif progress < 0.50:
+            return 2
+        else:
+            return 3
+        
     for episode in range(1, num_episodes + 1):
-        obs, _ = env.reset()
+        current_level = get_curriculum_level(episode, num_episodes)
+        obs, _ = env.reset(curriculum_level=current_level)
         done = False
         episode_reward = 0
         steps = 0
         total_loss = 0
 
-        while not done:
+        while not done and steps < config.max_steps_per_episode:
             action = agent.select_action(obs)
             next_obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
@@ -73,7 +83,11 @@ def main():
         if episode % 10 == 0:
             avg_reward = np.mean(reward_history[-10:])
             print(f"Episode {episode:04d} | Avg Reward (last 10): {avg_reward:7.2f} | Epsilon: {agent.epsilon:.3f}")
-
+            
+            
+            if current_level == 3 and avg_reward > config.early_stopping_avg_reward:
+                print(f"\nEnvironment Solved at Episode {episode}!")
+                break
         if episode % 100 == 0:
             os.makedirs("output/models", exist_ok=True)
             agent.save(f"output/models/dqn_checkpoint_{episode}.pth")
