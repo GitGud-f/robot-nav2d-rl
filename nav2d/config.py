@@ -14,10 +14,13 @@ creature_vel_scale = 0.01
 
 lidar_resolution = 200
 lidar_max_dist = 0.2 
+min_safe_dist = 0.2
 
 reach_goal_reward = 100.0
-collision_penalty = -50.0
+too_close_penalty = -0.5
+collision_penalty = -100.0
 step_penalty = -0.1
+dense_reward = 100
 max_steps_per_episode = 500
 
 

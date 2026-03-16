@@ -31,8 +31,8 @@ class MobileRobotEnv(gym.Env):
         # Actions: Right, Left, Forward, Sprint
         self.action_space = spaces.Discrete(4)
         
-        # Obs: [robot_x, robot_y, goal_x, goal_y] + 200 Lidar rays
-        obs_dim = 4 + config.lidar_resolution
+        # Obs: [robot_x, robot_y, dist_to_goal, sin_angle_diff, cos_angle_diff] + 200 Lidar rays
+        obs_dim = 5 + config.lidar_resolution
         self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(obs_dim,), dtype=np.float32)
         
         self.engine = None
@@ -95,8 +95,14 @@ class MobileRobotEnv(gym.Env):
                             self.engine.robot.y - self.engine.goal.y)
                             
         reward = config.step_penalty
-        reward += (prev_dist - new_dist) * 100 # Dense reward for moving closer
+        reward += (prev_dist - new_dist) * config.dense_reward # Dense reward for moving closer
         
+        obs = self._get_obs()
+        lidar_readings = obs[5:]
+        
+        if np.min(lidar_readings) < config.min_safe_dist:
+            reward -= config.too_close_penalty
+            
         terminated = False
         if reach_goal:
             reward += config.reach_goal_reward
@@ -118,10 +124,20 @@ class MobileRobotEnv(gym.Env):
         Returns: 
             - np.ndarray: The observation vector.
         """
+
+        dx = self.engine.goal.x - self.engine.robot.x
+        dy = self.engine.goal.y - self.engine.robot.y
+        dist_to_goal = np.hypot(dx, dy)
+        
+        target_angle = np.arctan2(dy, dx)
+        angle_diff = target_angle - self.engine.robot.orient
+        angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
         
         base_state = np.array([
             self.engine.robot.x, self.engine.robot.y,
-            self.engine.goal.x, self.engine.goal.y
+            dist_to_goal / 1.414, 
+            np.sin(angle_diff), 
+            np.cos(angle_diff)
         ], dtype=np.float32)
         
         lidar_readings = get_lidar_readings(

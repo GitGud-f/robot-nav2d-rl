@@ -22,7 +22,6 @@ class QNetwork(nn.Module):
         """
         
         super(QNetwork, self).__init__()
-        # State dimension is 204 (4 base states + 200 lidar rays)
         self.fc1 = nn.Linear(state_dim, 256)
         self.fc2 = nn.Linear(256, 256)
         self.fc3 = nn.Linear(256, action_dim)
