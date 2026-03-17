@@ -165,23 +165,34 @@ We evaluated the trained models over 100 test episodes. \textbf{Configuration A}
     \label{fig:performance_plots}
 \end{figure}
 
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/dqn_learning_curve.png}
+        \caption{DQN Learning Curve: Shows high variance and slower convergence, with performance dips.}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/ppo_learning_curve.png}
+        \caption{PPO Learning Curve: Demonstrates superior stability, faster convergence, and higher rewards.}
+    \end{minipage}
+\end{figure}
+
 \section{Discussion and Analysis}
 
-\subsection{Effect of Reward Parameters (Config A vs Config B)}
-The hyperparameter configuration drastically altered the navigation policy. 
-\begin{itemize}
-    \item \textbf{Aggressive Step Penalty ($R_{\text{step}} = -0.8$):} In Config B, the step penalty was doubled. While intended to force the agent to find the goal faster, it inadvertently created a \textit{suicidal local optimum}. If the agent lost its heading toward the goal, the accumulating $-0.8$ penalties outweighed the $-200$ collision penalty. Consequently, the agent learned to intentionally crash into walls/obstacles to end the episode early rather than suffer prolonged step penalties, explaining the massive 55\% collision rate.
-    \item \textbf{Dense Reward Scaling:} Config B increased distance rewards from 60 to 90. This caused reward hacking; the agent would sometimes move back and forth at the edge of the goal to harvest dense distance/angle rewards without actually triggering the terminal state, leading to a much higher average step count ($72.9$ vs $34.3$). Config A provided a much healthier ratio, guiding the robot smoothly.
+\subsection{Convergence and Stability}
+The comparative analysis of the learning curves reveals distinct behavioral profiles:
+\begin{itemize} 
+    \item \textbf{DQN:} The learning process is characterized by high variance and an oscillating moving average. We observe a "plateau" around 1000 episodes, suggesting that the agent struggles to maintain a stable policy in the presence of dynamic obstacles. The dense "cloud" of episodic rewards indicates that the DQN agent remains prone to catastrophic collisions throughout training.
+    \item \textbf{PPO:} PPO exhibits a much steeper and cleaner learning trajectory. The moving average converges rapidly, and the agent maintains a higher reward baseline. The transient dips in performance at episode 1000 and 2500 correspond to the curriculum level-up events; PPO demonstrates a rapid recovery from these increases in environmental complexity.
 \end{itemize}
 
-\subsection{Algorithmic Comparison: PPO vs. DQN}
-Empirical evidence overwhelmingly favors PPO for this specific robotics task.
-\begin{itemize}
-    \item \textbf{State Space Dimensionality:} The environment features a 205-dimensional continuous state vector (heavily dominated by Lidar arrays). DQN maps this space to discrete Q-values. In high-dimensional spaces, DQN suffers from severe overestimation bias and instability during off-policy replay buffer sampling.
-    \item \textbf{Policy Stability:} PPO restricts policy updates using a clipped surrogate objective function ($1 \pm \epsilon$). This prevents catastrophic forgetting—a frequent issue when navigating dynamic obstacles (like the orbiting creature). When the DQN agent experienced a rare collision with the orbiting creature, the large $-200$ penalty drastically corrupted its Q-network via the Bellman update. PPO, utilizing Generalized Advantage Estimation (GAE) and Orthogonal Initialization, smoothed out the variance of these dynamic collisions, yielding a robust 71\% success rate.
-\end{itemize}
+\subsection{Algorithmic Comparison}
+PPO significantly outperforms DQN in this task. While DQN maps the 205-dimensional state space to discrete Q-values, it suffers from overestimation bias. When the DQN agent collides with the orbiting creature, the large $-200$ penalty drastically corrupts the Q-network via Bellman updates. PPO, utilizing Generalized Advantage Estimation (GAE), smoothes the variance of these dynamic collisions, allowing for a more robust and predictable policy.
 
 \section{Conclusion}
-This assignment highlighted the intricate balance required in Deep Reinforcement Learning for robotics. We successfully engineered an environment with Lidar simulation, moving targets, and dynamic obstacles. The comparative analysis demonstrated that Proximal Policy Optimization (PPO), when paired with a moderately scaled reward function, is significantly more capable of interpreting high-dimensional sensory data than value-based DQN. Furthermore, we empirically validated that overly aggressive step penalties can deter exploration and incentivize intentional collisions, underscoring the importance of reward shaping in artificial intelligence.
+This assignment successfully demonstrated that Proximal Policy Optimization (PPO) is significantly more capable of interpreting high-dimensional sensory data than value-based DQN for dynamic robotic navigation. We also validated that reward shaping must be carefully balanced; overly aggressive step penalties can lead to "reward hacking" or intentional collisions to terminate episodes, highlighting the necessity of careful hyperparameter tuning in reinforcement learning.
 
 \end{document}
