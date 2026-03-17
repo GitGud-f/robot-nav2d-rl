@@ -54,20 +54,27 @@ def main():
         else:
             return 3
         
+    best_avg = -float('inf')
+    previous_level = 1 
     for episode in range(1, num_episodes + 1):
         current_level = get_curriculum_level(episode, num_episodes)
+        
+        if current_level > previous_level:
+            print(f"--- Leveling up to Curriculum Level {current_level}! Boosting Exploration ---")
+            agent.epsilon = 0.50
+            previous_level = current_level
         obs, _ = env.reset(curriculum_level=current_level)
         done = False
         episode_reward = 0
         steps = 0
         total_loss = 0
-
+        
         while not done and steps < config.max_steps_per_episode:
             action = agent.select_action(obs)
             next_obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
             
-            loss = agent.step(obs, action, reward, next_obs, done)
+            loss = agent.step(obs, action, reward, next_obs, terminated)
             
             obs = next_obs
             episode_reward += reward
@@ -75,6 +82,8 @@ def main():
             if loss is not None:
                 total_loss += loss
 
+        agent.epsilon = max(agent.epsilon_end, agent.epsilon * agent.epsilon_decay)
+        
         reward_history.append(episode_reward)
         avg_loss = total_loss / steps if steps > 0 else 0
         
@@ -82,12 +91,15 @@ def main():
 
         if episode % 10 == 0:
             avg_reward = np.mean(reward_history[-10:])
+            if avg_reward > best_avg:
+                best_avg = avg_reward
+                agent.save("output/models/dqn_best.pth")
             print(f"Episode {episode:04d} | Avg Reward (last 10): {avg_reward:7.2f} | Epsilon: {agent.epsilon:.3f}")
             
             
-            if current_level == 3 and avg_reward > config.early_stopping_avg_reward:
-                print(f"\nEnvironment Solved at Episode {episode}!")
-                break
+            # if current_level == 3 and avg_reward > config.early_stopping_avg_reward:
+            #     print(f"\nEnvironment Solved at Episode {episode}!")
+            #     break
         if episode % 100 == 0:
             os.makedirs("output/models", exist_ok=True)
             agent.save(f"output/models/dqn_checkpoint_{episode}.pth")

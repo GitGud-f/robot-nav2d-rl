@@ -31,9 +31,9 @@ class MobileRobotEnv(gym.Env):
         # Actions: Right, Left, Forward, Sprint
         self.action_space = spaces.Discrete(4)
         
-        # Obs: [robot_x, robot_y, dist_to_goal, sin_angle_diff, cos_angle_diff] + 200 Lidar rays
+        # Obs: [dist_to_goal, sin_angle_diff, cos_angle_diff] + 200 Lidar rays
         obs_dim = 5 + config.lidar_resolution
-        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(obs_dim,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-1.0, high=1.0, shape=(obs_dim,), dtype=np.float32)
         
         self.engine = None
         self.max_steps = config.max_steps_per_episode
@@ -63,8 +63,10 @@ class MobileRobotEnv(gym.Env):
         obs_points = [(0.5, 0.5), (0.3, 0.8), (0.8, 0.3)]
         
         if curriculum_level == 1:
-            rx, ry = 0.2, 0.2
-            gx, gy = 0.8, 0.8
+            rx = np.random.uniform(0.15, 0.25)
+            ry = np.random.uniform(0.15, 0.25)
+            gx = np.random.uniform(0.75, 0.85)
+            gy = np.random.uniform(0.75, 0.85)
         elif curriculum_level == 2:
             # Phase 2: Random Robot, Fixed Goal
             rx = np.random.uniform(0.1, 0.9)
@@ -72,7 +74,7 @@ class MobileRobotEnv(gym.Env):
             gx, gy = 0.8, 0.8
             if rx == gx and gy == ry:
                 rx -=  0.2
-            if  (rx, ry) in obs_points:
+            if  tuple((rx, ry)) in obs_points:
                 rx -= 0.1
         else:
             # Phase 3: Random Robot, Random Goal (Full Complexity)
@@ -84,13 +86,13 @@ class MobileRobotEnv(gym.Env):
                 rx -=  0.1
                 ry += 0.1
                 
-            if  (rx, ry) in obs_points:
+            if  tuple((rx, ry)) in obs_points:
                 if rx >= 0.1: rx -= 0.1
-                else: rx + 0.2
+                else: rx += 0.2
                 
-            if  (gx, gy) in obs_points:
-                if rx >= 0.1: rx -= 0.1
-                else: rx + 0.2
+            if  tuple((gx, gy)) in obs_points:
+                if gx >= 0.1: gx -= 0.1
+                else: gx += 0.2
             
         robot = VelRobot(rx, ry)
         goal = Goal(gx, gy)
@@ -110,7 +112,7 @@ class MobileRobotEnv(gym.Env):
         Advances the environment by one step given the agent's action.
         
         Args:
-            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
+            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Do Nothing).
             
         Returns:
             - tuple: (observation, reward, terminated, truncated, info)
@@ -138,14 +140,11 @@ class MobileRobotEnv(gym.Env):
            
         reward = config.step_penalty
         
-        reward += (prev_dist - new_dist) * config.dense_distance_reward # Dense reward for moving closer
-        reward += (angle_diff_prev - angle_diff_new) * config.dense_angle_reward
-        
         obs = self._get_obs()
-        lidar_readings = obs[5:]
+        lidar_readings = obs[3:]
         
         if np.min(lidar_readings) < config.min_safe_dist:
-            reward -= config.too_close_penalty
+            reward += config.too_close_penalty
             
         terminated = False
         if reach_goal:
@@ -154,9 +153,17 @@ class MobileRobotEnv(gym.Env):
         elif hit_obstacle:
             reward += config.collision_penalty
             terminated = True
+        else:
+            reward += (prev_dist - new_dist) * config.dense_distance_reward 
+            reward += (angle_diff_prev - angle_diff_new) * config.dense_angle_reward
+            # reward  += -new_dist * config.dense_distance_reward 
+            # reward += -abs(angle_diff_new) * config.dense_angle_reward
             
         truncated = self.current_step >= self.max_steps
         
+        # if reach_goal:
+        #     print(f"GOAL REACHED! Total Reward: {reward}")
+            
         return self._get_obs(), reward, terminated, truncated, {}
 
     def _get_obs(self) -> np.ndarray:
@@ -178,7 +185,8 @@ class MobileRobotEnv(gym.Env):
         angle_diff = (angle_diff + np.pi) % (2 * np.pi) - np.pi
         
         base_state = np.array([
-            self.engine.robot.x, self.engine.robot.y,
+            2*self.engine.robot.x - 1,  
+            2*self.engine.robot.y - 1,
             dist_to_goal / 1.414, 
             np.sin(angle_diff), 
             np.cos(angle_diff)

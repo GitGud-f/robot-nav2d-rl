@@ -88,16 +88,14 @@ def main():
         
         logger.log_episode(episode_reward, steps, avg_loss)
         
-        if episode % config.ppo_update_agent == 0:
-            agent.train()
             
         if episode % 10 == 0:
             avg_reward = np.mean(reward_history[-10:])
             print(f"Episode {episode:04d} | Global Steps: {global_step} | Avg Reward (last 10): {avg_reward:7.2f}")
             
-            if current_level == 3 and avg_reward > config.early_stopping_avg_reward:
-                print(f"\nEnvironment Solved at Episode {episode}!")
-                break
+            # if current_level == 3 and avg_reward > config.early_stopping_avg_reward:
+            #     print(f"\nEnvironment Solved at Episode {episode}!")
+            #     break
 
         if episode % 100 == 0:
             os.makedirs("output/models", exist_ok=True)

@@ -101,7 +101,6 @@ class DQNAgent(BaseAgent):
         
         if len(self.memory) > self.batch_size:
             loss = self.train()
-            self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)
             return loss
         return None
 
@@ -118,7 +117,9 @@ class DQNAgent(BaseAgent):
         current_q = self.q_net(states).gather(1, actions)
 
         with torch.no_grad():
-            max_next_q = self.target_net(next_states).max(1)[0].unsqueeze(1)
+            next_actions = self.q_net(next_states).argmax(dim=1, keepdim=True)
+            max_next_q = self.target_net(next_states).gather(1, next_actions)
+            # max_next_q = self.target_net(next_states).max(1)[0].unsqueeze(1)
             target_q = rewards + (1 - dones) * self.gamma * max_next_q
 
         loss = F.smooth_l1_loss(current_q, target_q)

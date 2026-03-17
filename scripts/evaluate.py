@@ -58,6 +58,7 @@ def evaluate_agent(env: MobileRobotEnv, agent: DQNAgent or PPOAgent, num_episode
             writer.append_data(env.render())
             
         while not done:
+            # agent.epsilon  = 0.20
             action = agent.select_action(obs, evaluate=True)
             obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated

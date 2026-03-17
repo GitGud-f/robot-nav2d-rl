@@ -154,7 +154,7 @@ class PPOAgent(BaseAgent):
                 
                 # Forward pass for mini-batch
                 logits = self.actor(b_states[mb_idx])
-                values = self.critic(b_states[mb_idx]).squeeze()
+                values = self.critic(b_states[mb_idx]).squeeze(-1)
                 
                 dist = Categorical(logits=logits)
                 new_logprobs = dist.log_prob(b_actions[mb_idx])

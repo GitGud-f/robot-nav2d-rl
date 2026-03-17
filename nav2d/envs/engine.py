@@ -41,18 +41,17 @@ class NavigationEngine:
         Updates the physics of the simulation based on the given action.
         
         Args:
-            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Sprint).
+            - action (int): The action to take (0: Right, 1: Left, 2: Forward, 3: Do Nothing).
         """
         if action == 0: # RIGHT
-            self.robot.orient -= np.pi/4
+            self.robot.orient -= np.pi/12 
         elif action == 1: # LEFT
-            self.robot.orient += np.pi/4
+            self.robot.orient += np.pi/12 
         elif action == 2: # FORWARD
             self.robot.move(config.robot_vel_scale * np.cos(self.robot.orient),
                             config.robot_vel_scale * np.sin(self.robot.orient))
-        elif action == 3: # SPRINT
-            self.robot.move(2 * config.robot_vel_scale * np.cos(self.robot.orient),
-                            2 * config.robot_vel_scale * np.sin(self.robot.orient))
+        elif action == 3: # Do Nothing
+            pass
 
         self.robot.orient = self.robot.orient % (2 * np.pi)
 
