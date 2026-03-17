@@ -212,4 +212,17 @@ __marimo__/
 .AppleDouble
 .LSOverride
 
-output/
+!output
+output/*
+!output/videos
+output/videos/*
+!output/videos/dqn_eval.gif
+!output/videos/ppo_eval.gif
+
+!output/logs
+output/logs/*
+!output/logs/.gitkeep
+
+!output/models
+output/models/*
+!output/models/.gitkeep
